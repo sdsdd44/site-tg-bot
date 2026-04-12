@@ -2,7 +2,7 @@
 // AtrhasGPT Mini App
 // ===================================================
 
-const OPENROUTER_API_KEY = "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";
+const PROXY_URL = "https://atrhasgpt-proxy.olavashow.workers.dev/";
 const MODEL = "google/gemini-2.0-flash-001";
 const MAX_HISTORY = 20;
 
@@ -180,35 +180,29 @@ async function sendMessage() {
 // ===================================================
 // AI ЗАПРОС
 // ===================================================
-async function askAI(messages) {
+async function askAI() {
   try {
-    const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const resp = await fetch(PROXY_URL, {
       method: "POST",
       headers: {
-        "Authorization":  `Bearer ${OPENROUTER_API_KEY}`,
-        "Content-Type":   "application/json",
-        "HTTP-Referer":   "https://t.me/AtrhasGPT_bot",
-        "X-Title":        "AtrhasGPT"
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model:      MODEL,
-        messages,
-        max_tokens: 1500
+        messages: history
       })
     });
 
     const data = await resp.json();
 
-    if (resp.ok) {
-      return data.choices?.[0]?.message?.content || "Пустой ответ.";
-    } else {
-      const errMsg = data?.error?.message || "Неизвестная ошибка";
-      console.error("API Error:", errMsg);
-      return `⚠️ Ошибка: ${errMsg}`;
+    if (!resp.ok) {
+      return `⚠️ Ошибка: ${data?.error || "Неизвестная ошибка"}`;
     }
+
+    return data.answer || "Пустой ответ.";
+
   } catch (err) {
-    console.error("Fetch error:", err);
-    return "❌ Не удалось связаться с сервером. Проверь интернет.";
+    console.error(err);
+    return "❌ Нет соединения с сервером.";
   }
 }
 
