@@ -1,67 +1,232 @@
 // ===================================================
-// AtrhasGPT Mini App
+// AtrhasGPT — Liquid Glass UI
 // ===================================================
 
+// ЗАМЕНИ на свой Cloudflare Worker URL
 const PROXY_URL = "https://atrhasgpt-proxy.olavashow.workers.dev/";
-const MODEL = "google/gemini-2.0-flash-001";
+
 const MAX_HISTORY = 20;
 
-// --- Telegram WebApp ---
+// --- Telegram ---
 const tg = window.Telegram?.WebApp;
-if (tg) {
-  tg.ready();
-  tg.expand();
-  tg.setHeaderColor(tg.themeParams.bg_color || "#0f0f0f");
-}
+if (tg) { tg.ready(); tg.expand(); }
 
-// --- Состояние ---
-let history = [];
-let selectedImage = null; // { base64, type, name }
-let isLoading = false;
+// ===================================================
+// СОСТОЯНИЕ
+// ===================================================
+let chats      = {};   // { id: { title, messages: [] } }
+let activeChatId = null;
+let selectedImage = null;
+let isLoading  = false;
 
-// --- DOM ---
-const messagesEl  = document.getElementById("messages");
-const userInput   = document.getElementById("userInput");
-const sendBtn     = document.getElementById("sendBtn");
-const clearBtn    = document.getElementById("clearBtn");
-const attachBtn   = document.getElementById("attachBtn");
-const fileInput   = document.getElementById("fileInput");
-const imagePreview = document.getElementById("imagePreview");
-const previewImg  = document.getElementById("previewImg");
-const removeImg   = document.getElementById("removeImg");
-const previewName = document.getElementById("previewName");
-const statusText  = document.getElementById("statusText");
+// ===================================================
+// DOM
+// ===================================================
+const messagesEl      = document.getElementById("messages");
+const userInput       = document.getElementById("userInput");
+const sendBtn         = document.getElementById("sendBtn");
+const menuBtn         = document.getElementById("menuBtn");
+const newChatIcon     = document.getElementById("newChatIcon");
+const newChatBtn      = document.getElementById("newChatBtn");
+const sidebar         = document.getElementById("sidebar");
+const sidebarClose    = document.getElementById("sidebarClose");
+const overlay         = document.getElementById("overlay");
+const chatsList       = document.getElementById("chatsList");
+const headerTitle     = document.getElementById("headerTitle");
+const attachBtn       = document.getElementById("attachBtn");
+const fileInput       = document.getElementById("fileInput");
+const imagePreviewBar = document.getElementById("imagePreviewBar");
+const previewImg      = document.getElementById("previewImg");
+const previewName     = document.getElementById("previewName");
+const removeImg       = document.getElementById("removeImg");
+const welcomeScreen   = document.getElementById("welcomeScreen");
 
 // ===================================================
 // ИНИЦИАЛИЗАЦИЯ
 // ===================================================
 function init() {
-  // Восстанавливаем историю из localStorage
-  const saved = localStorage.getItem("atrhаsgpt_history");
-  if (saved) {
-    try {
-      history = JSON.parse(saved);
-      renderSavedHistory();
-    } catch {}
+  loadChats();
+  renderChatsList();
+
+  if (Object.keys(chats).length === 0) {
+    showWelcome();
+  } else {
+    // Открываем последний чат
+    const ids = Object.keys(chats);
+    openChat(ids[ids.length - 1]);
   }
 
   // Слушатели
   userInput.addEventListener("input", onInput);
   userInput.addEventListener("keydown", onKeyDown);
   sendBtn.addEventListener("click", sendMessage);
-  clearBtn.addEventListener("click", clearChat);
+  menuBtn.addEventListener("click", openSidebar);
+  sidebarClose.addEventListener("click", closeSidebar);
+  overlay.addEventListener("click", closeSidebar);
+  newChatBtn.addEventListener("click", () => { createNewChat(); closeSidebar(); });
+  newChatIcon.addEventListener("click", createNewChat);
   attachBtn.addEventListener("click", () => fileInput.click());
   fileInput.addEventListener("change", onFileSelect);
   removeImg.addEventListener("click", clearImage);
 }
 
 // ===================================================
+// SIDEBAR
+// ===================================================
+function openSidebar() {
+  sidebar.classList.add("open");
+  overlay.classList.add("show");
+}
+
+function closeSidebar() {
+  sidebar.classList.remove("open");
+  overlay.classList.remove("show");
+}
+
+// ===================================================
+// ЧАТЫ
+// ===================================================
+function createNewChat(firstMsg) {
+  const id    = Date.now().toString();
+  const title = firstMsg
+    ? firstMsg.slice(0, 30) + (firstMsg.length > 30 ? "..." : "")
+    : "Новый чат";
+
+  chats[id] = { title, messages: [] };
+  openChat(id);
+  renderChatsList();
+  saveChats();
+  return id;
+}
+
+function openChat(id) {
+  activeChatId = id;
+  headerTitle.textContent = chats[id]?.title || "AtrhasGPT";
+
+  // Убираем welcome
+  if (welcomeScreen) welcomeScreen.style.display = "none";
+
+  // Рендерим сообщения
+  messagesEl.innerHTML = "";
+
+  const msgs = chats[id]?.messages || [];
+  if (msgs.length === 0) {
+    showWelcomeInChat();
+  } else {
+    msgs.forEach(m => {
+      if (m.role === "user") {
+        renderUserMsg(m.content, m.imageUrl || null);
+      } else {
+        renderBotMsg(m.content);
+      }
+    });
+  }
+
+  scrollDown();
+  renderChatsList();
+  closeSidebar();
+}
+
+function deleteChat(id, e) {
+  e.stopPropagation();
+
+  delete chats[id];
+  saveChats();
+
+  if (activeChatId === id) {
+    const ids = Object.keys(chats);
+    if (ids.length > 0) {
+      openChat(ids[ids.length - 1]);
+    } else {
+      activeChatId = null;
+      messagesEl.innerHTML = "";
+      showWelcome();
+      headerTitle.textContent = "AtrhasGPT";
+    }
+  }
+
+  renderChatsList();
+}
+
+function renderChatsList() {
+  chatsList.innerHTML = "";
+
+  const ids = Object.keys(chats).reverse();
+
+  if (ids.length === 0) {
+    chatsList.innerHTML = `
+      <div style="padding:16px;text-align:center;color:var(--text-dim);font-size:13px;">
+        Нет чатов
+      </div>`;
+    return;
+  }
+
+  ids.forEach(id => {
+    const item = document.createElement("div");
+    item.className = "chat-item" + (id === activeChatId ? " active" : "");
+
+    item.innerHTML = `
+      <span class="chat-item-text">${escHtml(chats[id].title)}</span>
+      <button class="chat-item-del" title="Удалить">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    `;
+
+    item.addEventListener("click", () => openChat(id));
+    item.querySelector(".chat-item-del").addEventListener("click", (e) => deleteChat(id, e));
+    chatsList.appendChild(item);
+  });
+}
+
+// ===================================================
+// WELCOME
+// ===================================================
+function showWelcome() {
+  messagesEl.innerHTML = `
+    <div class="welcome-screen" id="welcomeScreen">
+      <div class="welcome-title">AtrhasGPT</div>
+      <div class="welcome-sub">Чем могу помочь?</div>
+      <div class="welcome-cards">
+        <div class="welcome-card" onclick="setPrompt('Объясни что такое квантовые компьютеры')">
+          Объясни что такое квантовые компьютеры
+        </div>
+        <div class="welcome-card" onclick="setPrompt('Напиши код простого сайта на HTML')">
+          Напиши код простого сайта на HTML
+        </div>
+        <div class="welcome-card" onclick="setPrompt('Придумай идею для проекта на Python')">
+          Придумай идею для проекта на Python
+        </div>
+        <div class="welcome-card" onclick="setPrompt('Что такое Liquid Glass дизайн?')">
+          Что такое Liquid Glass дизайн?
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function showWelcomeInChat() {
+  const el = document.createElement("div");
+  el.style.cssText = "display:flex;align-items:center;justify-content:center;flex:1;color:var(--text-dim);font-size:14px;padding:40px;text-align:center;";
+  el.textContent = "Начни диалог — напиши что-нибудь";
+  messagesEl.appendChild(el);
+}
+
+function setPrompt(text) {
+  userInput.value = text;
+  onInput();
+  userInput.focus();
+}
+
+// ===================================================
 // ВВОД
 // ===================================================
 function onInput() {
-  // Авторастягивание
   userInput.style.height = "auto";
-  userInput.style.height = Math.min(userInput.scrollHeight, 120) + "px";
+  userInput.style.height = Math.min(userInput.scrollHeight, 140) + "px";
   updateSendBtn();
 }
 
@@ -79,31 +244,31 @@ function updateSendBtn() {
 }
 
 // ===================================================
-// ФАЙЛ / ИЗОБРАЖЕНИЕ
+// ФАЙЛ
 // ===================================================
 function onFileSelect(e) {
   const file = e.target.files[0];
   if (!file) return;
 
   if (!file.type.startsWith("image/")) {
-    alert("Можно прикреплять только изображения!");
-    return;
+    alert("Только изображения!"); return;
   }
-
   if (file.size > 20 * 1024 * 1024) {
-    alert("Файл слишком большой (максимум 20 МБ)");
-    return;
+    alert("Максимум 20 МБ"); return;
   }
 
   const reader = new FileReader();
-  reader.onload = (ev) => {
-    const base64Full = ev.target.result; // data:image/...;base64,...
-    const base64     = base64Full.split(",")[1];
-    selectedImage    = { base64, type: file.type, name: file.name, dataUrl: base64Full };
-
-    previewImg.src       = base64Full;
-    previewName.textContent = file.name;
-    imagePreview.style.display = "flex";
+  reader.onload = ev => {
+    const dataUrl = ev.target.result;
+    selectedImage = {
+      base64:  dataUrl.split(",")[1],
+      type:    file.type,
+      name:    file.name,
+      dataUrl
+    };
+    previewImg.src           = dataUrl;
+    previewName.textContent  = file.name;
+    imagePreviewBar.style.display = "flex";
     attachBtn.classList.add("active");
     updateSendBtn();
   };
@@ -113,8 +278,9 @@ function onFileSelect(e) {
 
 function clearImage() {
   selectedImage = null;
-  imagePreview.style.display = "none";
+  imagePreviewBar.style.display = "none";
   attachBtn.classList.remove("active");
+  previewImg.src = "";
   updateSendBtn();
 }
 
@@ -126,91 +292,116 @@ async function sendMessage() {
 
   const text  = userInput.value.trim();
   const image = selectedImage;
-
   if (!text && !image) return;
 
-  // --- Сборка сообщения для отображения ---
-  appendUserMessage(text, image?.dataUrl);
-
-  // --- Сборка для API ---
-  let apiMessage;
-  if (image) {
-    apiMessage = {
-      role: "user",
-      content: [
-        image
-          ? {
-              type: "image_url",
-              image_url: { url: `data:${image.type};base64,${image.base64}` }
-            }
-          : null,
-        text ? { type: "text", text } : { type: "text", text: "Что на этом изображении?" }
-      ].filter(Boolean)
-    };
-  } else {
-    apiMessage = { role: "user", content: text };
+  // Создаём чат если нет активного
+  if (!activeChatId || !chats[activeChatId]) {
+    createNewChat(text || "Фото");
   }
 
-  history.push(apiMessage);
-  trimHistory();
+  // Если чат пустой — обновляем заголовок
+  if (chats[activeChatId].messages.length === 0) {
+    const title = (text || "Фото").slice(0, 35) +
+      ((text || "Фото").length > 35 ? "..." : "");
+    chats[activeChatId].title = title;
+    headerTitle.textContent   = title;
+  }
 
-  // Сбрасываем ввод
+  // Убираем welcome-заглушку
+  const stub = messagesEl.querySelector("[style*='Начни диалог']");
+  if (stub) stub.remove();
+  const ws = messagesEl.querySelector(".welcome-screen");
+  if (ws) ws.remove();
+
+  // Рендер сообщения юзера
+  renderUserMsg(text, image?.dataUrl || null);
+
+  // Запись в историю чата
+  const userEntry = { role: "user", content: text, imageUrl: image?.dataUrl || null };
+  chats[activeChatId].messages.push(userEntry);
+
+  // Строим массив для API
+  const apiMessages = buildApiMessages();
+
+  // Сброс
   userInput.value = "";
   userInput.style.height = "auto";
   clearImage();
 
-  // Статус
+  // Загрузка
   setLoading(true);
   const typingEl = appendTyping();
 
   // Запрос
-  const answer = await askAI(history);
+  const answer = await askAI(apiMessages);
 
-  // Убираем typing
   typingEl.remove();
   setLoading(false);
 
-  // Показываем ответ
-  appendBotMessage(answer);
-  history.push({ role: "assistant", content: answer });
-  trimHistory();
-  saveHistory();
+  // Ответ
+  renderBotMsg(answer);
+  chats[activeChatId].messages.push({ role: "assistant", content: answer });
+
+  // Чистим историю
+  trimMessages();
+  saveChats();
+  renderChatsList();
 }
 
 // ===================================================
-// AI ЗАПРОС
+// API
 // ===================================================
-async function askAI() {
+function buildApiMessages() {
+  const msgs = chats[activeChatId]?.messages || [];
+
+  return msgs.map(m => {
+    if (m.imageUrl) {
+      return {
+        role: "user",
+        content: [
+          {
+            type: "image_url",
+            image_url: { url: m.imageUrl }
+          },
+          {
+            type: "text",
+            text: m.content || "Что на этом изображении?"
+          }
+        ]
+      };
+    }
+    return { role: m.role, content: m.content };
+  });
+}
+
+async function askAI(messages) {
   try {
     const resp = await fetch(PROXY_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        messages: history
-      })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages })
     });
 
     const data = await resp.json();
 
     if (!resp.ok) {
-      return `⚠️ Ошибка: ${data?.error || "Неизвестная ошибка"}`;
+      return `Ошибка: ${data?.error || "Неизвестная ошибка"}`;
     }
 
     return data.answer || "Пустой ответ.";
 
   } catch (err) {
     console.error(err);
-    return "❌ Нет соединения с сервером.";
+    return "Нет соединения с сервером.";
   }
 }
 
 // ===================================================
-// РЕНДЕР СООБЩЕНИЙ
+// РЕНДЕР
 // ===================================================
-function appendUserMessage(text, imageDataUrl) {
-  const wrap = makeWrap("user");
+function renderUserMsg(text, imageDataUrl) {
+  const group = document.createElement("div");
+  group.className = "msg-group user";
 
   const bubble = document.createElement("div");
   bubble.className = "bubble";
@@ -218,56 +409,51 @@ function appendUserMessage(text, imageDataUrl) {
   if (imageDataUrl) {
     const img = document.createElement("img");
     img.src = imageDataUrl;
-    img.className = "msg-image";
+    img.className = "msg-img";
+    img.loading = "lazy";
     bubble.appendChild(img);
   }
 
   if (text) {
-    const p = document.createElement("span");
-    p.textContent = text;
-    bubble.appendChild(p);
+    const span = document.createElement("span");
+    span.textContent = text;
+    bubble.appendChild(span);
   }
 
-  wrap.appendChild(bubble);
-  wrap.appendChild(makeTime());
-  messagesEl.appendChild(wrap);
+  const time = makeTime();
+  group.appendChild(bubble);
+  group.appendChild(time);
+  messagesEl.appendChild(group);
   scrollDown();
 }
 
-function appendBotMessage(text) {
-  const wrap = makeWrap("bot");
+function renderBotMsg(text) {
+  const group = document.createElement("div");
+  group.className = "msg-group bot";
 
   const bubble = document.createElement("div");
   bubble.className = "bubble";
   bubble.innerHTML = formatText(text);
 
-  wrap.appendChild(bubble);
-  wrap.appendChild(makeTime());
-  messagesEl.appendChild(wrap);
+  const time = makeTime();
+  group.appendChild(bubble);
+  group.appendChild(time);
+  messagesEl.appendChild(group);
   scrollDown();
 }
 
 function appendTyping() {
   const wrap = document.createElement("div");
-  wrap.className = "message-wrap bot";
-
-  const indicator = document.createElement("div");
-  indicator.className = "typing-indicator";
-  indicator.innerHTML = `
-    <div class="typing-dot"></div>
-    <div class="typing-dot"></div>
-    <div class="typing-dot"></div>
+  wrap.className = "typing-wrap";
+  wrap.innerHTML = `
+    <div class="typing-bubble">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>
   `;
-
-  wrap.appendChild(indicator);
   messagesEl.appendChild(wrap);
   scrollDown();
-  return wrap;
-}
-
-function makeWrap(role) {
-  const wrap = document.createElement("div");
-  wrap.className = `message-wrap ${role}`;
   return wrap;
 }
 
@@ -275,122 +461,102 @@ function makeTime() {
   const el = document.createElement("div");
   el.className = "msg-time";
   const now = new Date();
-  el.textContent = now.toLocaleTimeString("ru", { hour: "2-digit", minute: "2-digit" });
+  el.textContent = now.toLocaleTimeString("ru", {
+    hour: "2-digit", minute: "2-digit"
+  });
   return el;
 }
 
 // ===================================================
-// ФОРМАТИРОВАНИЕ ТЕКСТА
+// ФОРМАТИРОВАНИЕ
 // ===================================================
-function formatText(text) {
-  // Экранируем HTML
-  let safe = text
+function formatText(raw) {
+  let s = raw
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 
-  // Блоки кода ```
-  safe = safe.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => {
-    return `<pre><code>${code.trim()}</code></pre>`;
+  // Блок кода
+  s = s.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => {
+    const id = "code_" + Math.random().toString(36).slice(2);
+    return `
+      <pre>
+        <button class="copy-btn" onclick="copyCode('${id}')">копировать</button>
+        <code id="${id}">${code.trim()}</code>
+      </pre>`;
   });
 
-  // Инлайн `код`
-  safe = safe.replace(/`([^`]+)`/g, "<code>$1</code>");
+  // Инлайн код
+  s = s.replace(/`([^`\n]+)`/g, "<code>$1</code>");
 
-  // **жирный**
-  safe = safe.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  // Жирный
+  s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
 
-  // *курсив*
-  safe = safe.replace(/\*(.+?)\*/g, "<em>$1</em>");
+  // Курсив
+  s = s.replace(/\*(.+?)\*/g, "<em>$1</em>");
 
-  // Переносы строк
-  safe = safe.replace(/\n/g, "<br>");
+  // Переносы
+  s = s.replace(/\n/g, "<br>");
 
-  return safe;
+  return s;
+}
+
+function copyCode(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    const btn = el.previousElementSibling;
+    if (btn) { btn.textContent = "скопировано!"; setTimeout(() => { btn.textContent = "копировать"; }, 2000); }
+  });
 }
 
 // ===================================================
-// УПРАВЛЕНИЕ СОСТОЯНИЕМ
+// СОСТОЯНИЕ
 // ===================================================
 function setLoading(val) {
   isLoading = val;
   userInput.disabled = val;
-
-  if (val) {
-    statusText.textContent = "печатает...";
-    statusText.className = "header-status thinking";
-  } else {
-    statusText.textContent = "онлайн";
-    statusText.className = "header-status";
-  }
-
   updateSendBtn();
 }
 
-function clearChat() {
-  if (history.length === 0) return;
-
-  if (tg?.showConfirm) {
-    tg.showConfirm("Очистить историю чата?", (ok) => {
-      if (ok) doClear();
-    });
-  } else {
-    if (confirm("Очистить историю чата?")) doClear();
-  }
-}
-
-function doClear() {
-  history = [];
-  localStorage.removeItem("atrhаsgpt_history");
-
-  // Убираем все сообщения и показываем приветствие
-  messagesEl.innerHTML = `
-    <div class="welcome-block">
-      <div class="welcome-icon">🤖</div>
-      <h2>AtrhasGPT</h2>
-      <p>Привет! Я твой умный ассистент.<br>Спроси меня что угодно!</p>
-    </div>
-  `;
-
-  if (tg?.HapticFeedback) {
-    tg.HapticFeedback.notificationOccurred("success");
+function trimMessages() {
+  if (!activeChatId) return;
+  const msgs = chats[activeChatId].messages;
+  if (msgs.length > MAX_HISTORY) {
+    chats[activeChatId].messages = msgs.slice(-MAX_HISTORY);
   }
 }
 
 // ===================================================
-// ИСТОРИЯ
+// LOCALSTORAGE
 // ===================================================
-function trimHistory() {
-  // Оставляем только текстовые сообщения в истории (без картинок — слишком тяжело)
-  const textOnly = history.filter(m => typeof m.content === "string");
-  if (textOnly.length > MAX_HISTORY) {
-    // Удаляем старые
-    const excess = history.length - MAX_HISTORY;
-    history.splice(0, excess);
-  }
-}
-
-function saveHistory() {
-  // Сохраняем только текстовые сообщения (картинки не сохраняем — много весят)
-  const toSave = history.filter(m => typeof m.content === "string");
+function saveChats() {
   try {
-    localStorage.setItem("atrhаsgpt_history", JSON.stringify(toSave.slice(-MAX_HISTORY)));
+    // Не сохраняем base64 картинки — слишком тяжёлые
+    const toSave = {};
+    Object.keys(chats).forEach(id => {
+      toSave[id] = {
+        title: chats[id].title,
+        messages: chats[id].messages.map(m => ({
+          role:    m.role,
+          content: m.content
+          // imageUrl намеренно не сохраняем
+        }))
+      };
+    });
+    localStorage.setItem("atrhasgpt_chats", JSON.stringify(toSave));
   } catch (e) {
-    console.warn("localStorage error:", e);
+    console.warn("localStorage:", e);
   }
 }
 
-function renderSavedHistory() {
-  // Убираем приветствие
-  messagesEl.innerHTML = "";
-
-  history.forEach(msg => {
-    if (msg.role === "user") {
-      appendUserMessage(typeof msg.content === "string" ? msg.content : "", null);
-    } else if (msg.role === "assistant") {
-      appendBotMessage(msg.content);
-    }
-  });
+function loadChats() {
+  try {
+    const raw = localStorage.getItem("atrhasgpt_chats");
+    if (raw) chats = JSON.parse(raw);
+  } catch (e) {
+    chats = {};
+  }
 }
 
 // ===================================================
@@ -400,6 +566,13 @@ function scrollDown() {
   requestAnimationFrame(() => {
     messagesEl.scrollTop = messagesEl.scrollHeight;
   });
+}
+
+function escHtml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 // ===================================================
