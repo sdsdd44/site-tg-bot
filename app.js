@@ -2,7 +2,7 @@
 // AtrhasGPT Mini App
 // ===================================================
 
-const OPENROUTER_API_KEY = "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";
+const OPENROUTER_API_KEY = "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";
 const MODEL = "google/gemini-2.0-flash-001";
 const MAX_HISTORY = 20;
 
