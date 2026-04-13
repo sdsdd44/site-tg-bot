@@ -1,169 +1,203 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>ArthasGPT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>IMMORTAL AI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap" rel="stylesheet" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
- 
-  <!-- Ambient orbs -->
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-  <div class="orb orb-3"></div>
-  <div class="noise"></div>
- 
-  <!-- Sakura petals -->
-  <div id="sakura-container"></div>
- 
-  <!-- Sidebar -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-brand">
-        <span class="brand-mark">A</span>
-        <span class="brand-name">ArthasGPT</span>
-      </div>
-      <button class="icon-btn" id="sidebarClose" aria-label="Close">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+
+  <div class="bg-gradient"></div>
+  <div class="ambient-orb orb-1"></div>
+  <div class="ambient-orb orb-2"></div>
+
+  <!-- ═══════════════════════════════════════════
+       NAV BAR — iOS 26 Island Style
+  ════════════════════════════════════════════ -->
+  <header class="nav-bar">
+    <div class="nav-island nav-left">
+      <button class="icon-btn" id="menuBtn" aria-label="Меню">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
       </button>
     </div>
- 
-    <button class="new-chat-btn" id="newChatBtn">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+
+    <div class="nav-island nav-center">
+      <span class="nav-logo">IMMORTAL AI</span>
+    </div>
+
+    <div class="nav-island nav-right">
+      <button class="icon-btn" id="settingsBtn" aria-label="Настройки">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="newChatBtn" aria-label="Новый чат">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════
+       SIDEBAR — iOS 26 Island
+  ════════════════════════════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-title">Чаты</span>
+      <button class="icon-btn" id="closeSidebar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <button class="new-chat-btn" id="sidebarNewChat">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
       Новый чат
     </button>
- 
-    <div class="chats-label">История</div>
- 
+
     <div class="chats-list" id="chatsList"></div>
- 
+
     <div class="sidebar-footer">
-      <div class="sidebar-user">
-        <div class="user-avatar">A</div>
-        <div class="user-info">
-          <span class="user-name">ArthasGPT User</span>
-          <span class="user-status">● online</span>
+      <div class="user-info">
+        <div class="user-avatar">I</div>
+        <div class="user-details">
+          <span class="user-name">Immortal</span>
+          <span class="user-status">● Online</span>
         </div>
       </div>
     </div>
   </aside>
- 
+
   <div class="overlay" id="overlay"></div>
- 
-  <!-- Main -->
-  <div class="app" id="app">
- 
-    <header class="header">
-      <button class="icon-btn" id="menuBtn" aria-label="Menu">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
- 
-      <div class="header-center">
-        <span class="header-title" id="headerTitle">ArthasGPT</span>
-        <span class="header-dot"></span>
+
+  <!-- ═══════════════════════════════════════════
+       SETTINGS MODAL — iOS 26 Island
+  ════════════════════════════════════════════ -->
+  <div class="modal" id="settingsModal">
+    <div class="modal-island settings-island">
+      <div class="modal-header">
+        <span class="modal-title">Настройки</span>
+        <button class="icon-btn" id="closeSettings">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
- 
-      <button class="icon-btn" id="newChatIcon" aria-label="New chat">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-      </button>
-    </header>
- 
-    <main class="messages" id="messages">
+
+      <div class="settings-section">
+        <label class="settings-label">Тема</label>
+        <div class="theme-switch">
+          <button class="theme-btn" data-theme="dark">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            Тёмная
+          </button>
+          <button class="theme-btn" data-theme="light">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            Светлая
+          </button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <label class="settings-label">Модель AI</label>
+        <select class="settings-select" id="modelSelect">
+          <option value="google/gemini-2.0-flash-001">✨ Gemini Flash</option>
+          <option value="google/gemini-pro">🔮 Gemini Pro</option>
+          <option value="anthropic/claude-3-haiku">⚡ Claude Haiku</option>
+          <option value="anthropic/claude-3-sonnet">🎭 Claude Sonnet</option>
+          <option value="openai/gpt-4o-mini">🚀 GPT-4 Mini</option>
+          <option value="openai/gpt-4o">💎 GPT-4</option>
+        </select>
+      </div>
+
+      <div class="settings-section">
+        <label class="settings-label">Креативность: <span id="tempValue">0.7</span></label>
+        <input type="range" class="settings-range" id="tempSlider" min="0" max="2" step="0.1" value="0.7">
+        <div class="range-labels"><span>Точный</span><span>Креативный</span></div>
+      </div>
+
+      <div class="settings-section">
+        <label class="settings-label">Макс. токенов: <span id="tokensValue">1500</span></label>
+        <input type="range" class="settings-range" id="tokensSlider" min="500" max="4000" step="100" value="1500">
+        <div class="range-labels"><span>Коротко</span><span>Подробно</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       MAIN CHAT AREA
+  ════════════════════════════════════════════ -->
+  <main class="chat-area" id="chatArea">
+    <div class="messages-container" id="messagesContainer">
+      <!-- Welcome Screen -->
       <div class="welcome-screen" id="welcomeScreen">
-        <div class="welcome-glyph">✦</div>
-        <div class="welcome-title">ArthasGPT</div>
-        <div class="welcome-sub">Чем могу помочь сегодня?</div>
-        <div class="welcome-cards">
-          <div class="welcome-card" onclick="setPrompt('Объясни что такое квантовые компьютеры')">
+        <div class="welcome-icon">✦</div>
+        <h1 class="welcome-title">IMMORTAL AI</h1>
+        <p class="welcome-sub">Чем могу помочь?</p>
+        <div class="prompt-cards">
+          <div class="prompt-card" data-prompt="Объясни квантовые компьютеры простыми словами">
             <span class="card-icon">⟡</span>
-            Квантовые компьютеры
+            <span>Квантовые компьютеры</span>
           </div>
-          <div class="welcome-card" onclick="setPrompt('Напиши код простого сайта на HTML')">
+          <div class="prompt-card" data-prompt="Напиши код простого веб-сайта">
             <span class="card-icon">◈</span>
-            Сайт на HTML
+            <span>Написать код</span>
           </div>
-          <div class="welcome-card" onclick="setPrompt('Придумай идею для проекта на Python')">
+          <div class="prompt-card" data-prompt="Помоги придумать идею для проекта">
             <span class="card-icon">◇</span>
-            Идея Python-проекта
+            <span>Идея для проекта</span>
           </div>
-          <div class="welcome-card" onclick="setPrompt('Что такое Liquid Glass дизайн?')">
+          <div class="prompt-card" data-prompt="Что такое дизайн интерфейсов?">
             <span class="card-icon">◉</span>
-            Liquid Glass дизайн
+            <span>Дизайн интерфейсов</span>
           </div>
         </div>
       </div>
-    </main>
- 
-    <!-- Image preview -->
-    <div class="image-preview-bar" id="imagePreviewBar" style="display:none;">
-      <img id="previewImg" src="" alt="" />
+    </div>
+
+    <!-- Image Preview Bar -->
+    <div class="image-preview" id="imagePreview" style="display: none;">
+      <img id="previewImg" src="" alt="">
       <span id="previewName"></span>
-      <button id="removeImg" class="icon-btn small">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <button class="icon-btn small" id="removeImage">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
       </button>
     </div>
- 
+
+    <!-- Input Area -->
     <footer class="input-area">
-      <div class="input-glass">
-        <button class="attach-btn" id="attachBtn" aria-label="Attach image">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <div class="input-island">
+        <button class="icon-btn attach-btn" id="attachBtn" aria-label="Прикрепить">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+          </svg>
         </button>
-        <input type="file" id="fileInput" accept="image/*" style="display:none;" />
-        <textarea id="userInput" placeholder="Напиши сообщение…" rows="1"></textarea>
+        <input type="file" id="fileInput" accept="image/*" style="display: none;">
+        <textarea id="messageInput" placeholder="Напиши сообщение..." rows="1"></textarea>
         <button class="send-btn" id="sendBtn" disabled>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+          </svg>
         </button>
       </div>
-      <div class="input-hint">ArthasGPT может ошибаться — проверяй важное</div>
+      <p class="input-hint">IMMORTAL AI может ошибаться</p>
     </footer>
- 
-  </div>
- 
+  </main>
+
   <script src="app.js"></script>
-  <script>
-    // Sakura petals (ported from personal site)
-    (function() {
-      const sakura = document.getElementById('sakura-container');
-      const palettes = [
-        ['rgba(232,64,90,0.35)', 'rgba(200,80,110,0.18)'],
-        ['rgba(123,97,255,0.30)', 'rgba(160,130,255,0.15)'],
-        ['rgba(255,255,255,0.12)', 'rgba(200,200,255,0.06)'],
-      ];
-      const isMobile = window.innerWidth < 768;
-      const interval = isMobile ? 2200 : 1100;
- 
-      function spawnPetal() {
-        if (document.hidden) return;
-        const el = document.createElement('div');
-        el.className = 'petal';
-        const [c1, c2] = palettes[Math.floor(Math.random() * palettes.length)];
-        const size = (4 + Math.random() * 7) + 'px';
-        const dur = 14 + Math.random() * 10;
-        el.style.cssText = `
-          left:${Math.random()*100}vw;
-          width:${size}; height:${size};
-          background:linear-gradient(135deg,${c1},${c2});
-          --dx:${(Math.random()-0.5)*60}px;
-          animation-duration:${dur}s;
-          animation-delay:${Math.random()*2}s;
-          border-radius:${50+Math.random()*20}% ${40+Math.random()*20}% ${40+Math.random()*20}% ${50+Math.random()*20}% / ${50+Math.random()*20}% ${50+Math.random()*20}% ${40+Math.random()*20}% ${40+Math.random()*20}%;
-        `;
-        sakura.appendChild(el);
-        setTimeout(() => el.remove(), (dur + 2) * 1000);
-      }
- 
-      const n = isMobile ? 2 : 5;
-      for (let i = 0; i < n; i++) setTimeout(spawnPetal, i * 300);
-      let t = setInterval(spawnPetal, interval);
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden) clearInterval(t);
-        else t = setInterval(spawnPetal, interval);
-      });
-    })();
-  </script>
 </body>
 </html>
