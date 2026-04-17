@@ -374,6 +374,166 @@ button {
   background: rgba(232, 64, 90, 0.1);
 }
 
+/* ─── CHAT OPTIONS MODAL ─────────────── */
+.options-modal-island {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.options-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-smooth);
+  width: 100%;
+  text-align: left;
+}
+
+.options-btn:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-bright);
+}
+
+.options-btn.danger {
+  color: var(--accent);
+  border-color: rgba(232, 64, 90, 0.3);
+  background: rgba(232, 64, 90, 0.08);
+}
+
+.options-btn.danger:hover {
+  background: rgba(232, 64, 90, 0.15);
+}
+
+.options-btn.cancel {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  justify-content: center;
+}
+
+.options-btn.cancel:hover {
+  background: transparent;
+  color: var(--text);
+}
+
+/* ─── RENAME INPUT ───────────────────────── */
+.rename-input {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.rename-input:focus {
+  border-color: var(--accent);
+}
+
+/* ─── CHAT TITLE ISLAND ───────────────── */
+.chat-title-island {
+  position: fixed;
+  top: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99;
+  display: none;
+  width: 70%;
+  animation: slideDownFade 0.5s ease-out;
+}
+
+@keyframes slideDownFade {
+  from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.chat-title-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 0.5px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--glass-inner), var(--glass-shadow);
+  margin: 0 auto;
+}
+
+.chat-title-text {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+.chat-title-edit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.chat-title-edit:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+/* ─── CHAT ITEM MENU BUTTON ─────────── */
+.chat-item-menu {
+  opacity: 0;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-item:hover .chat-item-menu {
+  opacity: 1;
+}
+
+.chat-item-menu:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+/* ─── PINNED CHAT ──────────────��──────── */
+.chat-item.pinned .chat-item-text::before {
+  content: '📌 ';
+  font-size: 12px;
+}
+
 .sidebar-footer {
   padding: 16px;
   border-top: 0.5px solid var(--border);
