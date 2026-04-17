@@ -83,6 +83,23 @@
   <div class="overlay" id="overlay"></div>
 
   <!-- ═══════════════════════════════════════════
+       DELETE CONFIRMATION MODAL
+  ════════════════════════════════════════════ -->
+  <div class="modal" id="deleteModal">
+    <div class="modal-island delete-modal-island">
+      <div class="delete-modal-content">
+        <div class="delete-icon">⚠️</div>
+        <h3 class="delete-title">Удалить чат?</h3>
+        <p class="delete-text">Это действие нельзя отменить</p>
+      </div>
+      <div class="delete-buttons">
+        <button class="delete-btn cancel-btn" id="deleteCancelBtn">Отмена</button>
+        <button class="delete-btn confirm-btn" id="deleteConfirmBtn">Удалить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
        SETTINGS MODAL — iOS 26 Island
   ════════════════════════════════════════════ -->
   <div class="modal" id="settingsModal">
