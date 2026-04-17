@@ -87,12 +87,24 @@ function applyTheme(theme) {
 }
 
 function bindEvents() {
+  // Sidebar
   $("#menuBtn")?.addEventListener("click", openSidebar);
   $("#closeSidebar")?.addEventListener("click", closeSidebar);
-  $("#overlay")?.addEventListener("click", closeSidebar);
-  $("#sidebarNewChat")?.addEventListener("click", () => { createNewChat(); closeSidebar(); });
-  $("#newChatBtn")?.addEventListener("click", createNewChat);
+  $("#overlay")?.addEventListener("click", () => {
+    closeSidebar();
+    closeDeleteModal();
+  });
+  $("#sidebarNewChat")?.addEventListener("click", () => {
+    createNewChat();
+    closeSidebar();
+  });
   
+  // New chat button (+)
+  $("#newChatBtn")?.addEventListener("click", () => {
+    createNewChat();
+  });
+
+  // Settings
   $("#settingsBtn")?.addEventListener("click", () => {
     $("#settingsModal")?.classList.add("open");
   });
@@ -100,6 +112,7 @@ function bindEvents() {
     $("#settingsModal")?.classList.remove("open");
   });
 
+  // Theme buttons
   $$(".theme-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       state.settings.theme = btn.dataset.theme;
@@ -108,39 +121,48 @@ function bindEvents() {
     });
   });
 
+  // Model select
   $("#modelSelect")?.addEventListener("change", (e) => {
     state.settings.model = e.target.value;
     saveState();
   });
 
+  // Temperature slider
   $("#tempSlider")?.addEventListener("input", (e) => {
     state.settings.temperature = parseFloat(e.target.value);
     $("#tempValue").textContent = state.settings.temperature.toFixed(1);
     saveState();
   });
 
+  // Tokens slider
   $("#tokensSlider")?.addEventListener("input", (e) => {
     state.settings.maxTokens = parseInt(e.target.value);
     $("#tokensValue").textContent = state.settings.maxTokens;
     saveState();
   });
 
+  // Prompt cards
   $$(".prompt-card").forEach(card => {
     card.addEventListener("click", () => {
       setPrompt(card.dataset.prompt);
     });
   });
 
+  // File upload
   $("#attachBtn")?.addEventListener("click", () => {
     $("#fileInput")?.click();
   });
-
   $("#fileInput")?.addEventListener("change", onFileSelect);
   $("#removeImage")?.addEventListener("click", clearImage);
 
+  // Message input
   $("#messageInput")?.addEventListener("input", onInput);
   $("#messageInput")?.addEventListener("keydown", onKeyDown);
   $("#sendBtn")?.addEventListener("click", sendMessage);
+
+  // Delete confirmation modal
+  $("#deleteConfirmBtn")?.addEventListener("click", confirmDeleteChat);
+  $("#deleteCancelBtn")?.addEventListener("click", closeDeleteModal);
 }
 
 function openSidebar() {
@@ -153,24 +175,21 @@ function closeSidebar() {
   $("#overlay")?.classList.remove("active");
 }
 
-function createNewChat(firstMsg) {
+function createNewChat() {
   const id = Date.now().toString();
-  const title = firstMsg 
-    ? firstMsg.slice(0, 28) + (firstMsg.length > 28 ? "…" : "")
-    : "Новый чат";
 
   state.chats[id] = {
-    title,
+    title: "Новый чат",
     messages: [],
     model: state.settings.model,
     temperature: state.settings.temperature,
     maxTokens: state.settings.maxTokens
   };
   
-  openChat(id);
+  state.activeChatId = id;
   renderChatsList();
+  showWelcome();
   saveState();
-  return id;
 }
 
 function openChat(id) {
@@ -183,7 +202,7 @@ function openChat(id) {
   container.innerHTML = "";
 
   if (msgs.length === 0) {
-    showEmptyState();
+    showWelcome();
   } else {
     msgs.forEach(m => {
       if (m.role === "user") {
@@ -199,8 +218,28 @@ function openChat(id) {
   closeSidebar();
 }
 
-function deleteChat(id, e) {
-  e?.stopPropagation();
+let chatToDelete = null;
+
+function showDeleteModal(id) {
+  chatToDelete = id;
+  $("#deleteModal")?.classList.add("open");
+  $("#overlay")?.classList.add("active");
+}
+
+function closeDeleteModal() {
+  chatToDelete = null;
+  $("#deleteModal")?.classList.remove("open");
+  $("#overlay")?.classList.remove("active");
+}
+
+function confirmDeleteChat() {
+  if (chatToDelete) {
+    deleteChat(chatToDelete);
+  }
+  closeDeleteModal();
+}
+
+function deleteChat(id) {
   delete state.chats[id];
   saveState();
 
@@ -241,7 +280,10 @@ function renderChatsList() {
       </button>
     `;
     item.addEventListener("click", () => openChat(id));
-    item.querySelector(".chat-item-del").addEventListener("click", (e) => deleteChat(id, e));
+    item.querySelector(".chat-item-del").addEventListener("click", (e) => {
+      e.stopPropagation();
+      showDeleteModal(id);
+    });
     container.appendChild(item);
   });
 }
@@ -279,24 +321,6 @@ function showWelcome() {
   $$(".prompt-card").forEach(card => {
     card.addEventListener("click", () => setPrompt(card.dataset.prompt));
   });
-}
-
-function showEmptyState() {
-  const container = $("#messagesContainer");
-  if (!container) return;
-  
-  const empty = document.createElement("div");
-  empty.style.cssText = `
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    min-height: 200px;
-    color: var(--text-muted);
-    font-size: 14px;
-  `;
-  empty.textContent = "Начни диалог — напиши что-нибудь";
-  container.appendChild(empty);
 }
 
 function setPrompt(text) {
@@ -382,19 +406,27 @@ async function sendMessage() {
 
   if (!text && !image) return;
 
+  // Если нет активного чата — создаём новый
   if (!state.activeChatId || !state.chats[state.activeChatId]) {
-    createNewChat(text || "Фото");
+    const id = Date.now().toString();
+    const title = text.slice(0, 28) + (text.length > 28 ? "…" : "") || "Новый чат";
+    
+    state.chats[id] = {
+      title,
+      messages: [],
+      model: state.settings.model,
+      temperature: state.settings.temperature,
+      maxTokens: state.settings.maxTokens
+    };
+    state.activeChatId = id;
   }
 
   const chat = state.chats[state.activeChatId];
   
+  // Обновляем заголовок чата
   if (chat.messages.length === 0) {
-    const title = (text || "Фото").slice(0, 35) + ((text || "Фото").length > 35 ? "…" : "");
-    chat.title = title;
+    chat.title = text.slice(0, 35) + (text.length > 35 ? "…" : "");
   }
-
-  const empty = $("#messagesContainer").querySelector("div[style*='min-height']");
-  if (empty) empty.remove();
 
   renderUserMsg(text, image?.dataUrl || null);
   chat.messages.push({ role: "user", content: text, imageUrl: image?.dataUrl || null });
@@ -467,6 +499,10 @@ async function askAI(messages) {
 function renderUserMsg(text, imageDataUrl) {
   const container = $("#messagesContainer");
   if (!container) return;
+
+  // Удаляем welcome screen если есть
+  const welcome = container.querySelector(".welcome-screen");
+  if (welcome) welcome.remove();
 
   const group = document.createElement("div");
   group.className = "msg-group user";
