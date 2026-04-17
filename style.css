@@ -1,5 +1,6 @@
 /* ═══════════════════════════════════════════════════
    IMMORTAL AI — iOS 26 Style with Liquid Glass
+   Minimalist White/Gray Theme
    ═══════════════════════════════════════════════════ */
 
 /* ─── TOKENS ─────────────────────────────── */
@@ -15,10 +16,12 @@
   --text-secondary:  #98989d;
   --text-muted:      #636366;
   
-  /* Accents */
+  /* Accents - Red only */
   --accent:          #e8405a;
-  --accent-2:       #7b61ff;
-  --gradient:        linear-gradient(135deg, #e8405a 0%, #7b61ff 100%);
+  
+  /* Clean white for buttons */
+  --btn-bg:          #ffffff;
+  --btn-text:         #0a0a0a;
   
   /* Glass */
   --glass-blur:      blur(40px) saturate(180%);
@@ -49,12 +52,12 @@
 }
 
 [data-theme="light"] {
-  --bg:             #f5f5f7;
-  --bg-secondary:    #eaeaec;
+  --bg:             #ffffff;
+  --bg-secondary:    #f5f5f7;
   --surface:         rgba(255, 255, 255, 0.72);
-  --surface-hover:   rgba(255, 255, 255, 0.9);
-  --border:          rgba(60, 60, 67, 0.18);
-  --border-bright:   rgba(60, 60, 67, 0.35);
+  --surface-hover:   rgba(249, 249, 249, 0.9);
+  --border:          rgba(60, 60, 67, 0.15);
+  --border-bright:   rgba(60, 60, 67, 0.3);
   --text:            #1c1c1e;
   --text-secondary:  #636366;
   --text-muted:      #8e8e93;
@@ -64,8 +67,8 @@
   --glass-shadow:     0 8px 32px rgba(0,0,0,0.08),
                       0 2px 8px rgba(0,0,0,0.04);
   
-  --island-bg:       rgba(255, 255, 255, 0.85);
-  --island-border:   rgba(60, 60, 67, 0.2);
+  --island-bg:       rgba(255, 255, 255, 0.88);
+  --island-border:   rgba(60, 60, 67, 0.18);
 }
 
 /* ─── RESET ─────────────────────────────── */
@@ -108,8 +111,8 @@ button {
   position: fixed;
   inset: 0;
   background: 
-    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(232, 64, 90, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 40% at 80% 110%, rgba(123, 97, 255, 0.05) 0%, transparent 50%);
+    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(232, 64, 90, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 110%, rgba(0, 0, 0, 0.03) 0%, transparent 50%);
   z-index: 0;
   pointer-events: none;
 }
@@ -120,13 +123,13 @@ button {
   filter: blur(120px);
   pointer-events: none;
   z-index: 0;
-  opacity: 0.4;
+  opacity: 0.3;
 }
 
 .orb-1 {
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(232, 64, 90, 0.12), transparent 70%);
+  background: radial-gradient(circle, rgba(232, 64, 90, 0.06), transparent 70%);
   top: -200px;
   left: -150px;
   animation: drift1 22s ease-in-out infinite;
@@ -135,7 +138,7 @@ button {
 .orb-2 {
   width: 450px;
   height: 450px;
-  background: radial-gradient(circle, rgba(123, 97, 255, 0.10), transparent 70%);
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.05), transparent 70%);
   bottom: -150px;
   right: -100px;
   animation: drift2 26s ease-in-out infinite;
@@ -190,6 +193,10 @@ button {
   pointer-events: none;
 }
 
+[data-theme="light"] .nav-island::before {
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.06) 50%, transparent);
+}
+
 .nav-left {
   padding: 0 12px;
 }
@@ -206,10 +213,7 @@ button {
   font-size: 15px;
   font-weight: 700;
   letter-spacing: -0.3px;
-  background: linear-gradient(135deg, #fff 20%, rgba(255,255,255,0.6) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text);
 }
 
 .nav-right {
@@ -388,7 +392,7 @@ button {
 .user-avatar {
   width: 32px;
   height: 32px;
-  background: var(--gradient);
+  background: var(--text);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -396,7 +400,7 @@ button {
   font-family: var(--font-display);
   font-size: 14px;
   font-weight: 700;
-  color: white;
+  color: var(--bg);
 }
 
 .user-details {
@@ -434,11 +438,11 @@ button {
   pointer-events: all;
 }
 
-/* ─── MODAL / SETTINGS ─────────────────── */
+/* ─── MODAL ─────────────────────────── */
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(8px);
   z-index: 200;
   display: flex;
@@ -461,7 +465,7 @@ button {
   border: 0.5px solid var(--island-border);
   border-radius: var(--radius-xl);
   box-shadow: var(--glass-inner), var(--glass-shadow);
-  width: min(380px, 90vw);
+  width: min(340px, 90vw);
   max-height: 85vh;
   overflow-y: auto;
   transform: scale(0.95);
@@ -486,6 +490,70 @@ button {
   font-weight: 700;
 }
 
+/* ─── DELETE MODAL ─────────────────────── */
+.delete-modal-island {
+  padding: 24px;
+  text-align: center;
+}
+
+.delete-modal-content {
+  margin-bottom: 20px;
+}
+
+.delete-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+.delete-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.delete-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.delete-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.delete-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-smooth);
+}
+
+.cancel-btn {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  color: var(--text);
+}
+
+.cancel-btn:hover {
+  background: var(--surface-hover);
+}
+
+.confirm-btn {
+  background: var(--accent);
+  border: none;
+  color: white;
+}
+
+.confirm-btn:hover {
+  opacity: 0.9;
+}
+
+/* ─── SETTINGS ─────────────────────────── */
 .settings-section {
   padding: 16px 20px;
   border-bottom: 0.5px solid var(--border);
@@ -628,10 +696,6 @@ button {
   margin-bottom: 16px;
   animation: spin 20s linear infinite;
   display: inline-block;
-  background: var(--gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 @keyframes spin {
@@ -645,10 +709,7 @@ button {
   letter-spacing: -2px;
   line-height: 1;
   margin-bottom: 12px;
-  background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text);
 }
 
 .welcome-sub {
@@ -689,10 +750,7 @@ button {
 
 .prompt-card .card-icon {
   font-size: 16px;
-  background: var(--gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-muted);
   flex-shrink: 0;
 }
 
@@ -835,7 +893,7 @@ button {
 
 .typing-dot:nth-child(1) { background: var(--accent); animation-delay: 0s; }
 .typing-dot:nth-child(2) { animation-delay: 0.15s; }
-.typing-dot:nth-child(3) { background: var(--accent-2); animation-delay: 0.3s; }
+.typing-dot:nth-child(3) { animation-delay: 0.3s; }
 
 @keyframes bounce {
   0%, 60%, 100% { transform: translateY(0); }
@@ -891,8 +949,12 @@ button {
 }
 
 .input-island:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(232, 64, 90, 0.15);
+  border-color: var(--text);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .input-island:focus-within {
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
 }
 
 .attach-btn {
@@ -926,10 +988,10 @@ button {
 .send-btn {
   width: 36px;
   height: 36px;
-  background: var(--gradient);
+  background: var(--btn-bg);
   border: none;
   border-radius: 12px;
-  color: white;
+  color: var(--btn-text);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -940,7 +1002,7 @@ button {
 
 .send-btn:hover:not(:disabled) {
   transform: scale(1.05);
-  box-shadow: 0 4px 16px rgba(232, 64, 90, 0.35);
+  opacity: 0.9;
 }
 
 .send-btn:disabled {
