@@ -93,6 +93,7 @@ function bindEvents() {
   $("#overlay")?.addEventListener("click", () => {
     closeSidebar();
     closeDeleteModal();
+    $("#deleteAllModal")?.classList.remove("open");
   });
   $("#sidebarNewChat")?.addEventListener("click", () => {
     createNewChat();
@@ -121,24 +122,21 @@ function bindEvents() {
     });
   });
 
-  // Model select
-  $("#modelSelect")?.addEventListener("change", (e) => {
-    state.settings.model = e.target.value;
-    saveState();
+  // Delete all chats
+  $("#deleteAllChatsBtn")?.addEventListener("click", () => {
+    $("#deleteAllModal")?.classList.add("open");
   });
-
-  // Temperature slider
-  $("#tempSlider")?.addEventListener("input", (e) => {
-    state.settings.temperature = parseFloat(e.target.value);
-    $("#tempValue").textContent = state.settings.temperature.toFixed(1);
-    saveState();
+  $("#deleteAllCancelBtn")?.addEventListener("click", () => {
+    $("#deleteAllModal")?.classList.remove("open");
   });
-
-  // Tokens slider
-  $("#tokensSlider")?.addEventListener("input", (e) => {
-    state.settings.maxTokens = parseInt(e.target.value);
-    $("#tokensValue").textContent = state.settings.maxTokens;
+  $("#deleteAllConfirmBtn")?.addEventListener("click", () => {
+    state.chats = {};
+    state.activeChatId = null;
     saveState();
+    renderChatsList();
+    showWelcome();
+    $("#deleteAllModal")?.classList.remove("open");
+    $("#settingsModal")?.classList.remove("open");
   });
 
   // Prompt cards
