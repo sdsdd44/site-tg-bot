@@ -128,27 +128,26 @@
       </div>
 
       <div class="settings-section">
-        <label class="settings-label">Модель AI</label>
-        <select class="settings-select" id="modelSelect">
-          <option value="google/gemini-2.0-flash-001">✨ Gemini Flash</option>
-          <option value="google/gemini-pro">🔮 Gemini Pro</option>
-          <option value="anthropic/claude-3-haiku">⚡ Claude Haiku</option>
-          <option value="anthropic/claude-3-sonnet">🎭 Claude Sonnet</option>
-          <option value="openai/gpt-4o-mini">🚀 GPT-4 Mini</option>
-          <option value="openai/gpt-4o">💎 GPT-4</option>
-        </select>
+        <button class="danger-btn" id="deleteAllChatsBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+          Удалить все чаты
+        </button>
       </div>
+    </div>
+  </div>
 
-      <div class="settings-section">
-        <label class="settings-label">Креативность: <span id="tempValue">0.7</span></label>
-        <input type="range" class="settings-range" id="tempSlider" min="0" max="2" step="0.1" value="0.7">
-        <div class="range-labels"><span>Точный</span><span>Креативный</span></div>
+  <div class="modal" id="deleteAllModal">
+    <div class="modal-island delete-modal-island">
+      <div class="delete-modal-content">
+        <div class="delete-icon">⚠️</div>
+        <h3 class="delete-title">Удалить все чаты?</h3>
+        <p class="delete-text">Это действие нельзя отменить</p>
       </div>
-
-      <div class="settings-section">
-        <label class="settings-label">Макс. токенов: <span id="tokensValue">1500</span></label>
-        <input type="range" class="settings-range" id="tokensSlider" min="500" max="4000" step="100" value="1500">
-        <div class="range-labels"><span>Коротко</span><span>Подробно</span></div>
+      <div class="delete-buttons">
+        <button class="delete-btn cancel-btn" id="deleteAllCancelBtn">Отмена</button>
+        <button class="delete-btn confirm-btn" id="deleteAllConfirmBtn">Удалить</button>
       </div>
     </div>
   </div>
